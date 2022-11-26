@@ -1,4 +1,4 @@
-extension Character {
+public extension Character {
 	// unicode characters
 
 	static let objectPlaceholder: Character = "\u{fffc}"
@@ -55,7 +55,7 @@ extension Character {
 	}
 }
 
-extension Collection where Element == Character {
+public extension Collection where Element == Character {
 	var isIgnorableWhitespace: Bool {
 		allSatisfy(\.isIgnorableWhitespace)
 	}
