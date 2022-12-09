@@ -450,4 +450,17 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		
 		XCTAssertFalse(builder.parseErrors.isEmpty)
 	}
+	
+	func testLineBreaks() throws {
+		let builder = HTMLAttributedStringBuilder(html: """
+		<p>How do I create a br?<br />is it like this?</p><p>Or maybe this is a p?</p>
+		""")
+		let string = builder.generatedAttributedString()
+		
+		print("final", String(string.characters))
+		XCTAssertEqual(String(string.characters), """
+		How do I create a br?
+		is it like this?Or maybe this is a p?
+		""")
+	}
 }

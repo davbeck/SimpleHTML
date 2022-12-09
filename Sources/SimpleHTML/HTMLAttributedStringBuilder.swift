@@ -23,11 +23,17 @@ public enum HTMLEmbedURLAttribute: AttributedStringKey, CodableAttributedStringK
 	public static let name = "src"
 }
 
+public enum HTMLRawTextAttribute: AttributedStringKey, CodableAttributedStringKey {
+	public typealias Value = Bool
+	public static let name = "rawText"
+}
+
 public extension AttributeScopes {
 	struct HTMLAttributes: AttributeScope {
 		public let width: HTMLWidthAttribute
 		public let height: HTMLHeightAttribute
 		public let embedURL: HTMLEmbedURLAttribute
+		public let rawText: HTMLRawTextAttribute
 
 		public let foundation: FoundationAttributes
 	}
@@ -194,6 +200,9 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 			}
 
 			self.string += AttributedString(String(.objectPlaceholder), attributes: attributes)
+		case "br":
+			attributes.html.rawText = true
+			self.string += AttributedString("\n", attributes: attributes)
 		default: break
 		}
 
@@ -225,12 +234,16 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 
 		// updating in reverse order to avoid invalidating the ranges
 		for (_, range) in string.runs[\.presentationIntent].reversed() {
-			var substring = AttributedString(string[range])
+			for (isRawText, range) in string[range].runs[HTMLRawTextAttribute.self].reversed() {
+				guard isRawText != true else { continue }
+				
+				var substring = AttributedString(string[range])
 
-			// this may remove all characters in which case it will be removed
-			substring.characters.normalizeInlineSpaces()
+				// this may remove all characters in which case it will be removed
+				substring.characters.normalizeInlineSpaces()
 
-			string.replaceSubrange(range, with: substring)
+				string.replaceSubrange(range, with: substring)
+			}
 		}
 	}
 
