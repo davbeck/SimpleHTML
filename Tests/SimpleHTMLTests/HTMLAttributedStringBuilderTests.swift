@@ -457,10 +457,22 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		""")
 		let string = builder.generatedAttributedString()
 		
-		print("final", String(string.characters))
 		XCTAssertEqual(String(string.characters), """
 		How do I create a br?
 		is it like this?Or maybe this is a p?
+		""")
+	}
+	
+	func testPreserveWhitespace() throws {
+		let builder = HTMLAttributedStringBuilder(html: """
+		<p>enum Delimiter {<br />  case curlyBrace<br />}</p>
+		""", preserveWhitespace: true)
+		let string = builder.generatedAttributedString()
+		
+		XCTAssertEqual(String(string.characters), """
+		enum Delimiter {
+		  case curlyBrace
+		}
 		""")
 	}
 }

@@ -2,8 +2,11 @@ import Foundation
 import DTFoundation
 
 public extension AttributedString {
-	init(html: String) {
-		let builder = HTMLAttributedStringBuilder(html: html)
+	init(html: String, preserveWhitespace: Bool = false) {
+		let builder = HTMLAttributedStringBuilder(
+			html: html,
+			preserveWhitespace: preserveWhitespace
+		)
 		self = builder.generatedAttributedString()
 	}
 }
@@ -44,22 +47,27 @@ public extension AttributeScopes {
 public class HTMLAttributedStringBuilder: NSObject {
 	private let data: Data
 	private let parser: DTHTMLParser
+	let preserveWhitespace: Bool
 
-	public convenience init(html: String) {
+	public convenience init(html: String, preserveWhitespace: Bool = false) {
 		let data = Data(html.utf8)
 		self.init(
 			html: data,
-			encoding: .utf8
+			encoding: .utf8,
+			preserveWhitespace: preserveWhitespace
 		)
 	}
 
 	public init(
 		html: Data,
-		encoding: String.Encoding = .utf8
+		encoding: String.Encoding = .utf8,
+		preserveWhitespace: Bool = false
 	) {
 		self.data = html
 
 		self.parser = DTHTMLParser(data: data, encoding: encoding.rawValue)
+
+		self.preserveWhitespace = preserveWhitespace
 
 		super.init()
 
@@ -227,22 +235,24 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 	}
 
 	public func parserDidEndDocument(_ parser: DTHTMLParser!) {
-		// normalize whitespace
-		// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace
-		// we first iterate runs by "presentationIntent" which is basically
-		// the same as block level html elements
+		if !preserveWhitespace {
+			// normalize whitespace
+			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace
+			// we first iterate runs by "presentationIntent" which is basically
+			// the same as block level html elements
 
-		// updating in reverse order to avoid invalidating the ranges
-		for (_, range) in string.runs[\.presentationIntent].reversed() {
-			for (isRawText, range) in string[range].runs[HTMLRawTextAttribute.self].reversed() {
-				guard isRawText != true else { continue }
-				
-				var substring = AttributedString(string[range])
+			// updating in reverse order to avoid invalidating the ranges
+			for (_, range) in string.runs[\.presentationIntent].reversed() {
+				for (isRawText, range) in string[range].runs[HTMLRawTextAttribute.self].reversed() {
+					guard isRawText != true else { continue }
 
-				// this may remove all characters in which case it will be removed
-				substring.characters.normalizeInlineSpaces()
+					var substring = AttributedString(string[range])
 
-				string.replaceSubrange(range, with: substring)
+					// this may remove all characters in which case it will be removed
+					substring.characters.normalizeInlineSpaces()
+
+					string.replaceSubrange(range, with: substring)
+				}
 			}
 		}
 	}
