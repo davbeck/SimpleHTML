@@ -11,21 +11,6 @@ public extension AttributedString {
 	}
 }
 
-public enum HTMLWidthAttribute: AttributedStringKey, CodableAttributedStringKey {
-	public typealias Value = CGFloat
-	public static let name = "width"
-}
-
-public enum HTMLHeightAttribute: AttributedStringKey, CodableAttributedStringKey {
-	public typealias Value = CGFloat
-	public static let name = "height"
-}
-
-public enum HTMLEmbedURLAttribute: AttributedStringKey, CodableAttributedStringKey {
-	public typealias Value = URL
-	public static let name = "src"
-}
-
 public enum HTMLRawTextAttribute: AttributedStringKey, CodableAttributedStringKey {
 	public typealias Value = Bool
 	public static let name = "rawText"
@@ -38,11 +23,7 @@ public enum HTMLElementAttribute: AttributedStringKey, CodableAttributedStringKe
 
 public extension AttributeScopes {
 	struct HTMLAttributes: AttributeScope {
-		public let width: HTMLWidthAttribute
-		public let height: HTMLHeightAttribute
-		public let embedURL: HTMLEmbedURLAttribute
 		public let rawText: HTMLRawTextAttribute
-
 		public let element: HTMLElementAttribute
 
 		public let foundation: FoundationAttributes
@@ -188,39 +169,10 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 			let urlString = attributeDict["src"] as? String ?? ""
 			attributes.imageURL = URL(string: urlString)
 
-			if
-				let widthString = attributeDict["width"] as? String,
-				let width = Double(widthString)
-			{
-				attributes.html.width = CGFloat(exactly: width)
-			}
-			if
-				let heightString = attributeDict["height"] as? String,
-				let height = Double(heightString)
-			{
-				attributes.html.height = CGFloat(exactly: height)
-			}
-
 			let alt = attributeDict["alt"] as? String ?? ""
 			let content = alt.isEmpty ? String(.objectPlaceholder) : alt
 			self.string += AttributedString(content, attributes: attributes)
 		case "iframe":
-			let urlString = attributeDict["src"] as? String ?? ""
-			attributes.html.embedURL = URL(string: urlString)
-
-			if
-				let widthString = attributeDict["width"] as? String,
-				let width = Double(widthString)
-			{
-				attributes.html.width = CGFloat(exactly: width)
-			}
-			if
-				let heightString = attributeDict["height"] as? String,
-				let height = Double(heightString)
-			{
-				attributes.html.height = CGFloat(exactly: height)
-			}
-
 			self.string += AttributedString(String(.objectPlaceholder), attributes: attributes)
 		case "br":
 			attributes.html.rawText = true

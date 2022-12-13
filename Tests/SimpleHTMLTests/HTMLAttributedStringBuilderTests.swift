@@ -370,8 +370,8 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 			
 			XCTAssertEqual(string[run.range].string, String(.objectPlaceholder))
 			try XCTAssertEqual(string[run.range].imageURL, XCTUnwrap(URL(string: "https://realm-camo.imgix.net/dee05ecb8e00e0fedd3ff564a0d8adb5a1856faf/68747470733a2f2f63646e2e746f6c6c62726f74686572732e636f6d2f6d6f64656c732f73616c6964615f31313032365f2f656c65766174696f6e732f53414c445f53434c5f4e564e5f3346452d545f48475f53424141343231305f315f313830302e6a7067")))
-			XCTAssertEqual(string[run.range].html.width, 1221)
-			XCTAssertEqual(string[run.range].html.height, 815)
+			XCTAssertEqual(string[run.range].html.element?.width, 1221)
+			XCTAssertEqual(string[run.range].html.element?.height, 815)
 		}
 	}
 	
@@ -404,9 +404,9 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 			let run = runs[1]
 			
 			XCTAssertEqual(string[run.range].string, String(.objectPlaceholder))
-			try XCTAssertEqual(string[run.range].html.embedURL, XCTUnwrap(URL(string: "https://www.youtube.com/embed/RYlCVwxoL_g")))
-			XCTAssertEqual(string[run.range].html.width, 1920)
-			XCTAssertEqual(string[run.range].html.height, 1080)
+			try XCTAssertEqual(string[run.range].html.element?.src, XCTUnwrap(URL(string: "https://www.youtube.com/embed/RYlCVwxoL_g")))
+			XCTAssertEqual(string[run.range].html.element?.width, 1920)
+			XCTAssertEqual(string[run.range].html.element?.height, 1080)
 		}
 	}
 	

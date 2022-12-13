@@ -50,6 +50,18 @@ public struct HTMLElement {
 	public func has(class: String) -> Bool {
 		classes.contains(`class`) || (parent?.has(class: `class`) == true)
 	}
+
+	public var width: Double? {
+		attributes["width"].flatMap { Double($0) }
+	}
+
+	public var height: Double? {
+		attributes["height"].flatMap { Double($0) }
+	}
+
+	public var src: URL? {
+		attributes["src"].flatMap { URL(string: $0) }
+	}
 }
 
 extension HTMLElement: Equatable {
