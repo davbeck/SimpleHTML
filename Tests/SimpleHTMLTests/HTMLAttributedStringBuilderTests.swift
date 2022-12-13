@@ -475,4 +475,50 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		}
 		""")
 	}
+	
+	func testParsesElements() throws {
+		let builder = HTMLAttributedStringBuilder(html: """
+		<p>Links like <a href="https://daringfireball.net/linked/2022/12/12/foundation-swift" target="_blank" rel="nofollow noopener noreferrer"><span class="invisible">https://</span><span class="ellipsis">daringfireball.net/linked/2022</span><span class="invisible">/12/12/foundation-swift</span></a> should show a preview.</p>
+		""", preserveWhitespace: true)
+		let string = builder.generatedAttributedString()
+		
+		let runs = Array(string.runs)
+		try XCTRequireEqual(runs.count, 5)
+		
+		do {
+			let run = runs[0]
+			XCTAssertEqual(string[run.range].string, "Links like ")
+			XCTAssertEqual(run.attributes.html.element?.name, "p")
+			XCTAssertEqual(run.attributes.html.element?.attributes, [:])
+		}
+		
+		do {
+			let run = runs[1]
+			XCTAssertEqual(string[run.range].string, "https://")
+			XCTAssertEqual(run.attributes.html.element?.name, "span")
+			XCTAssertEqual(run.attributes.html.element?.attributes, ["class":"invisible"])
+		}
+		
+		do {
+			let run = runs[2]
+			XCTAssertEqual(string[run.range].string, "daringfireball.net/linked/2022")
+			XCTAssertEqual(run.attributes.html.element?.name, "span")
+			XCTAssertEqual(run.attributes.html.element?.attributes, ["class":"ellipsis"])
+		}
+		
+		do {
+			let run = runs[3]
+			XCTAssertEqual(string[run.range].string, "/12/12/foundation-swift")
+			XCTAssertEqual(run.attributes.html.element?.name, "span")
+			XCTAssertEqual(run.attributes.html.element?.attributes, ["class":"invisible"])
+		}
+		
+		do {
+			let run = runs[4]
+			XCTAssertEqual(string[run.range].string, " should show a preview.")
+			XCTAssertEqual(run.attributes.html.element?.name, "p")
+			XCTAssertEqual(run.attributes.html.element?.attributes, [:])
+			XCTAssertEqual(run.attributes.html.element, runs[0].attributes.html.element)
+		}
+	}
 }

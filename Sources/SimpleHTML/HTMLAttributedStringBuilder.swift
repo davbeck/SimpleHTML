@@ -31,12 +31,19 @@ public enum HTMLRawTextAttribute: AttributedStringKey, CodableAttributedStringKe
 	public static let name = "rawText"
 }
 
+public enum HTMLElementAttribute: AttributedStringKey, CodableAttributedStringKey {
+	public typealias Value = HTMLElement
+	public static let name = "element"
+}
+
 public extension AttributeScopes {
 	struct HTMLAttributes: AttributeScope {
 		public let width: HTMLWidthAttribute
 		public let height: HTMLHeightAttribute
 		public let embedURL: HTMLEmbedURLAttribute
 		public let rawText: HTMLRawTextAttribute
+
+		public let element: HTMLElementAttribute
 
 		public let foundation: FoundationAttributes
 	}
@@ -131,6 +138,13 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 	) {
 		var attributes = currentAttributes
 		let parent = attributes.presentationIntent
+
+		let element = HTMLElement(
+			parent: attributes.html.element,
+			name: elementName,
+			attributes: attributeDict as? [String:String] ?? [:]
+		)
+		attributes.html.element = element
 
 		switch elementName {
 		case "strong", "b":
