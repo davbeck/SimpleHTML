@@ -1,5 +1,9 @@
 import Foundation
-import DTFoundation
+#if canImport(AppKit)
+	import AppKit
+#elseif canImport(UIKit)
+	import UIKit
+#endif
 
 public extension AttributedString {
 	init(html: String, preserveWhitespace: Bool = false) {
@@ -32,9 +36,9 @@ public extension AttributeScopes {
 	var html: HTMLAttributes.Type { HTMLAttributes.self }
 }
 
-public class HTMLAttributedStringBuilder: NSObject {
+public class HTMLAttributedStringBuilder {
 	private let data: Data
-	private let parser: DTHTMLParser
+	private let parser: HTMLParser
 	let preserveWhitespace: Bool
 
 	public convenience init(html: String, preserveWhitespace: Bool = false) {
@@ -53,11 +57,9 @@ public class HTMLAttributedStringBuilder: NSObject {
 	) {
 		self.data = html
 
-		self.parser = DTHTMLParser(data: data, encoding: encoding.rawValue)
+		self.parser = HTMLParser(data: data, encoding: encoding)
 
 		self.preserveWhitespace = preserveWhitespace
-
-		super.init()
 
 		parser.delegate = self
 	}
@@ -111,11 +113,11 @@ public class HTMLAttributedStringBuilder: NSObject {
 	}
 }
 
-extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
+extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 	public func parser(
-		_ parser: DTHTMLParser!,
-		didStartElement elementName: String!,
-		attributes attributeDict: [AnyHashable: Any]! = [:]
+		_ parser: HTMLParser,
+		didStartElement elementName: String,
+		attributes attributeDict: [AnyHashable: Any]
 	) {
 		var attributes = currentAttributes
 		let parent = attributes.presentationIntent
@@ -123,7 +125,7 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 		let element = HTMLElement(
 			parent: attributes.html.element,
 			name: elementName,
-			attributes: attributeDict as? [String:String] ?? [:]
+			attributes: attributeDict as? [String: String] ?? [:]
 		)
 		attributes.html.element = element
 
@@ -139,7 +141,7 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 		case "u":
 			attributes.underlineStyle = .single
 		case "a":
-			let href = attributeDict?["href"] as? String
+			let href = attributeDict["href"] as? String
 			attributes.link = href.flatMap { URL(string: $0) }
 		case "p":
 			attributes.presentationIntent = .init(
@@ -184,15 +186,15 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 	}
 
 	public func parser(
-		_ parser: DTHTMLParser!,
-		didEndElement elementName: String!
+		_ parser: HTMLParser,
+		didEndElement elementName: String
 	) {
 		attributesStack.removeLast()
 	}
 
 	public func parser(
-		_ parser: DTHTMLParser!,
-		foundCharacters string: String!
+		_ parser: HTMLParser,
+		foundCharacters string: String
 	) {
 		let container = currentAttributes
 		let new = AttributedString(string, attributes: container)
@@ -200,7 +202,13 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 		self.string += new
 	}
 
-	public func parserDidEndDocument(_ parser: DTHTMLParser!) {
+	public func parserFoundProcessingInstruction(
+		_ parser: HTMLParser,
+		target: String,
+		data: String?
+	) {}
+
+	public func parserDidEndDocument(_ parser: HTMLParser) {
 		if !preserveWhitespace {
 			// normalize whitespace
 			// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Whitespace
@@ -224,8 +232,8 @@ extension HTMLAttributedStringBuilder: DTHTMLParserDelegate {
 	}
 
 	public func parser(
-		_ parser: DTHTMLParser!,
-		parseErrorOccurred parseError: Error!
+		_ parser: HTMLParser,
+		parseErrorOccurred parseError: ParseError
 	) {
 		// errors can be pretty mundane and not actually cause issues
 		self.parseErrors.append(parseError)
