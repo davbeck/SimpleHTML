@@ -48,14 +48,14 @@ public extension Character {
 		     .mediumMathematicalSpace,
 		     .ideographicSpace,
 		     .zeroWidthNoBreakSpace:
-			return false
+			false
 		default:
-			return isWhitespace
+			isWhitespace
 		}
 	}
 }
 
-public extension Collection where Element == Character {
+public extension Collection<Character> {
 	var isIgnorableWhitespace: Bool {
 		allSatisfy(\.isIgnorableWhitespace)
 	}

@@ -19,15 +19,15 @@ public struct HTMLElement {
 
 	private var storage: Storage
 
-	var parent: HTMLElement? {
+	public var parent: HTMLElement? {
 		storage.parent
 	}
 
-	var name: String {
+	public var name: String {
 		storage.name
 	}
 
-	var attributes: [String: String] {
+	public var attributes: [String: String] {
 		storage.attributes
 	}
 
@@ -95,7 +95,7 @@ extension HTMLElement: Codable {
 		try container.encode(storage.attributes, forKey: .attributes)
 	}
 
-	enum CodingKeys: String, CodingKey {
+	private enum CodingKeys: String, CodingKey {
 		case parent
 		case name
 		case attributes
