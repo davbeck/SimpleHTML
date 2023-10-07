@@ -1,10 +1,10 @@
 import Foundation
 
-public struct HTMLElement {
-	private class Storage {
-		var parent: HTMLElement?
-		var name: String
-		var attributes: [String: String]
+public struct HTMLElement: Sendable {
+	private final class Storage: Sendable {
+		let parent: HTMLElement?
+		let name: String
+		let attributes: [String: String]
 
 		init(
 			parent: HTMLElement? = nil,
@@ -17,7 +17,7 @@ public struct HTMLElement {
 		}
 	}
 
-	private var storage: Storage
+	private let storage: Storage
 
 	public var parent: HTMLElement? {
 		storage.parent
@@ -77,7 +77,7 @@ extension HTMLElement: Hashable {
 }
 
 extension HTMLElement: Codable {
-	public init(from decoder: Decoder) throws {
+	public init(from decoder: any Decoder) throws {
 		let container = try decoder.container(keyedBy: CodingKeys.self)
 
 		try self.init(
@@ -87,7 +87,7 @@ extension HTMLElement: Codable {
 		)
 	}
 
-	public func encode(to encoder: Encoder) throws {
+	public func encode(to encoder: any Encoder) throws {
 		var container = encoder.container(keyedBy: CodingKeys.self)
 
 		try container.encode(storage.parent, forKey: .parent)

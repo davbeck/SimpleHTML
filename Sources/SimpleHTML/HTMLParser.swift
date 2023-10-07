@@ -76,7 +76,7 @@ public extension HTMLParserDelegate {
 private func _startDocument() {}
 
 public class HTMLParser: SAXErrorHandler {
-	public weak var delegate: HTMLParserDelegate?
+	public weak var delegate: (any HTMLParserDelegate)?
 
 	private var data: Data
 	private var encoding: String.Encoding
@@ -326,7 +326,7 @@ public class HTMLParser: SAXErrorHandler {
 
 	 You may invoke this method after a parsing operation abnormally terminates to determine the cause of error.
 	 */
-	public private(set) var parseError: Swift.Error?
+	public private(set) var parseError: (any Error)?
 
 	/**
 	 Returns the public identifier of the external entity referenced in the HTML document.

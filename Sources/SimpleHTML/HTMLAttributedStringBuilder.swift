@@ -65,7 +65,7 @@ public class HTMLAttributedStringBuilder {
 	}
 
 	private var string = AttributedString()
-	public var parseErrors: [Error] = []
+	public var parseErrors: [any Error] = []
 
 	public func generatedAttributedString(string: inout AttributedString) {
 		self.string = string
