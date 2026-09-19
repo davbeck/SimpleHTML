@@ -1,6 +1,6 @@
-import Foundation
+public import Foundation
 import libxml2
-import SAXErrorHandler
+public import SAXErrorHandler
 
 // based on DTHTMLParser https://github.com/Cocoanetics/DTFoundation/blob/develop/Core/Source/DTHTMLParser/DTHTMLParser.m
 
@@ -274,7 +274,7 @@ public class HTMLParser: SAXErrorHandler {
 		// parse!
 		let result = htmlParseDocument(_parserContext)
 
-		return (result == 0 && !isAborting)
+		return result == 0 && !isAborting
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 #if canImport(AppKit)
 	import AppKit
 #elseif canImport(UIKit)

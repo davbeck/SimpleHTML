@@ -1,4 +1,9 @@
 @testable import SimpleHTML
+#if canImport(AppKit)
+	import AppKit
+#elseif canImport(UIKit)
+	import UIKit
+#endif
 import XCTest
 
 extension AttributedString {
@@ -10,6 +15,16 @@ extension AttributedString {
 extension AttributedSubstring {
 	var string: String {
 		String(characters)
+	}
+}
+
+extension AttributeContainer {
+	var platformUnderlineStyle: NSUnderlineStyle? {
+		#if canImport(AppKit)
+			self[AttributeScopes.AppKitAttributes.UnderlineStyleAttribute.self]
+		#elseif canImport(UIKit)
+			self[AttributeScopes.UIKitAttributes.UnderlineStyleAttribute.self]
+		#endif
 	}
 }
 
@@ -137,13 +152,13 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		try XCTRequireEqual(runs.count, 3)
 
 		XCTAssertEqual(string[runs[0].range].string, "Hello ")
-		XCTAssertEqual(runs[0].attributes.underlineStyle, nil)
+		XCTAssertEqual(runs[0].attributes.platformUnderlineStyle, nil)
 
 		XCTAssertEqual(string[runs[1].range].string, "World")
-		XCTAssertEqual(runs[1].attributes.underlineStyle, .single)
+		XCTAssertEqual(runs[1].attributes.platformUnderlineStyle, .single)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
-		XCTAssertEqual(runs[2].attributes.underlineStyle, nil)
+		XCTAssertEqual(runs[2].attributes.platformUnderlineStyle, nil)
 	}
 
 	func testLinks() throws {
@@ -203,28 +218,28 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 			let run = runs[0]
 			XCTAssertEqual(string[run.range].string, "BOLD UNDERLINE ITALIC")
 			XCTAssertEqual(run.attributes.inlinePresentationIntent, [.emphasized, .stronglyEmphasized])
-			XCTAssertEqual(run.attributes.underlineStyle, .single)
+			XCTAssertEqual(run.attributes.platformUnderlineStyle, .single)
 		}
 
 		do {
 			let run = runs[1]
 			XCTAssertEqual(string[run.range].string, "Bold")
 			XCTAssertEqual(run.attributes.inlinePresentationIntent, [.stronglyEmphasized])
-			XCTAssertEqual(run.attributes.underlineStyle, nil)
+			XCTAssertEqual(run.attributes.platformUnderlineStyle, nil)
 		}
 
 		do {
 			let run = runs[2]
 			XCTAssertEqual(string[run.range].string, "Italic")
 			XCTAssertEqual(run.attributes.inlinePresentationIntent, [.emphasized])
-			XCTAssertEqual(run.attributes.underlineStyle, nil)
+			XCTAssertEqual(run.attributes.platformUnderlineStyle, nil)
 		}
 
 		do {
 			let run = runs[3]
 			XCTAssertEqual(string[run.range].string, "underline")
 			XCTAssertEqual(run.attributes.inlinePresentationIntent, nil)
-			XCTAssertEqual(run.attributes.underlineStyle, .single)
+			XCTAssertEqual(run.attributes.platformUnderlineStyle, .single)
 		}
 	}
 
