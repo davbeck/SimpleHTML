@@ -51,13 +51,13 @@ public struct BlockTextView: View {
 	public var attributedString: AttributedString
 
 	/// Creates a block renderer for HTML, Markdown, or custom attributed text.
-	/// 
+	///
 	/// - Parameter attributedString: Text with Foundation block presentation intents.
 	public init(attributedString: AttributedString) {
 		self.attributedString = attributedString
 	}
 
-	// Group consecutive presentation-intent runs by their root block.
+	/// Group consecutive presentation-intent runs by their root block.
 	var blocks: [[AttributedSubstring]] {
 		var result: [[AttributedSubstring]] = []
 		var previousRoot: PresentationIntent.IntentType?
@@ -72,8 +72,8 @@ public struct BlockTextView: View {
 		return result
 	}
 
-	// Markdown list items can contain several paragraphs or a nested list.
-	// Only the first paragraph of each item receives its marker.
+	/// Markdown list items can contain several paragraphs or a nested list.
+	/// Only the first paragraph of each item receives its marker.
 	func showsListMarker(in block: [AttributedSubstring], at index: Int) -> Bool {
 		guard let item = block[index].presentationIntent?.listItem else { return false }
 		return !block[..<index].contains { $0.presentationIntent?.listItem == item }

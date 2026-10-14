@@ -61,7 +61,7 @@ public struct HTMLView<Content: View>: View {
 	///   - content: A view builder receiving the parsed string. Use ``BlockTextView`` to retain block layout.
 	public init(
 		html: String,
-		@ViewBuilder content: @escaping (AttributedString) -> Content
+		@ViewBuilder content: @escaping (AttributedString) -> Content,
 	) {
 		self.html = html
 		self.content = content

@@ -10,6 +10,10 @@ Use Xcode with a Swift 6.2 or newer toolchain. Open `Package.swift` in Xcode or 
 
 Keep parsing, attributed-string construction, and view rendering separate. Changes to supported HTML should include tests of the generated attributes; layout changes should be checked against HTML and Markdown inputs. Use Swift Testing for new tests. Do not use `.serialized` to work around flaky tests.
 
+Run `bin/format` and `bin/lint` before committing. Both use package plugins with pinned tool versions, so no separate formatter or linter installation is needed. SwiftFormat covers Swift sources and tests; SwiftLint checks the package manifest and production sources for forced casts, forced tries, forced unwraps, and unsafe concurrency overrides.
+
+GitHub Actions runs the full macOS test suite on the `xcode-27` preview runner, matching the macOS 27 snapshot baseline, and the full iOS suite on an iPhone 17 simulator running iOS 26.5 with Xcode 26.6. Tests and lint run for pull requests and pushes to `main`. A separate workflow formats branch pushes and commits any Swift formatting changes using the repository's default token. All three workflows also support manual runs.
+
 ## Running tests
 
 Run the macOS tests with:
@@ -22,16 +26,17 @@ Run the iOS tests with:
 
 ```sh
 xcodebuild -scheme SimpleHTML \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' test
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' \
+  IPHONEOS_DEPLOYMENT_TARGET=16.0 test
 ```
 
-The test suite includes parsing and whitespace tests, block-layout tests, and image snapshots. Snapshot rendering depends on OS fonts, so use the baseline platform versions when comparing images.
+The test suite includes parsing and whitespace tests, block-layout tests, and image snapshots. The iOS test build targets iOS 16 because the snapshot cases exercise SwiftUI's view-level bold and italic modifiers. The library continues to support iOS 15. Snapshot rendering depends on OS fonts, so use the baseline platform versions when comparing images.
 
 ## Snapshot tests
 
 `BlockTextViewSnapshotTests` records separate macOS and iOS images for both HTML and Markdown. One light/dark pair covers appearance; the remaining cases run in light mode. Cases cover small, large, XXXL, and accessibility Dynamic Type sizes; font, bold/italic, monospaced text, foreground color, tint, line spacing, and multiline alignment; and a narrow layout. Fixtures include wrapped text, links, three levels of lists, continuation paragraphs, and repeated content.
 
-The iOS references were recorded on an iPhone 17 simulator running iOS 26.5 at a fixed 2× display scale. The macOS references were recorded on macOS 27.0.1. Dynamic Type sizes affect the iOS references; macOS currently keeps the same text size.
+The iOS references were recorded on an iPhone 17 simulator running iOS 26.5 at a fixed 2× display scale. The macOS references were recorded on macOS 27.0.1, also at 2×. The macOS helper creates a bitmap at that scale so tests do not depend on whether the machine has a Retina display. Dynamic Type sizes affect the iOS references; macOS currently keeps the same text size.
 
 To intentionally update the baselines:
 
@@ -47,6 +52,8 @@ Do not regenerate snapshots just to make an unexplained failure pass. Investigat
 `DocumentationSnapshotTests` is a separate macOS suite focused on presentation assets for selected README, API, and customization examples. It uses public APIs and mirrors the documented snippets. Keep those bodies in sync when editing an example. Parsing-only examples do not need images.
 
 The suite renders content-sized canvases rendered directly by SwiftUI at 4× pixel density with a 16-point margin, a white background, a thin gray border, and fixed light appearance and locale. References were recorded on macOS 27.0.1. The suite's PNGs in `Sources/SimpleHTML/SimpleHTML.docc/Resources/` are both the snapshot baselines and the published assets; README links to the same files.
+
+Documentation images use a perceptual color precision of 0.99 while still requiring every pixel to match. Local and hosted rendering can differ by one value in a few 8-bit color channels during conversion to sRGB. Behavior snapshots retain exact pixel comparisons.
 
 To regenerate them, temporarily set this suite's trait to `.snapshots(record: .all)`, then run:
 

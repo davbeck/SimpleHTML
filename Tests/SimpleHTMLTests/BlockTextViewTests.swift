@@ -1,8 +1,8 @@
 import CustomDump
 import Foundation
-@testable import SimpleHTML
 import SwiftUI
 import Testing
+@testable import SimpleHTML
 
 @MainActor
 struct BlockTextViewTests {
@@ -50,14 +50,14 @@ struct BlockTextViewTests {
 		let string = try AttributedString(markdown: "**Bold** and *italic* with [a link](https://example.com).\n\nNext")
 		let view = BlockTextView(attributedString: string)
 		let paragraph = try #require(view.blocks.first?.first)
-		expectNoDifference(AttributedString(paragraph), AttributedString(string[string.startIndex..<paragraph.endIndex]))
+		expectNoDifference(AttributedString(paragraph), AttributedString(string[string.startIndex ..< paragraph.endIndex]))
 		#expect(paragraph.runs.contains { $0.inlinePresentationIntent == .stronglyEmphasized })
 		#expect(paragraph.runs.contains { $0.inlinePresentationIntent == .emphasized })
 		#expect(paragraph.runs.contains { $0.link == URL(string: "https://example.com") })
 	}
 
 	@Test func markdownListContinuationParagraphs() throws {
-		let view = BlockTextView(attributedString: try AttributedString(markdown: """
+		let view = try BlockTextView(attributedString: AttributedString(markdown: """
 		1. First paragraph
 
 		   Continuation paragraph
@@ -82,7 +82,7 @@ struct BlockTextViewTests {
 	}
 
 	@Test func repeatedMarkdownParagraphsRemainSeparate() throws {
-		let view = BlockTextView(attributedString: try AttributedString(markdown: "Repeat\n\nRepeat"))
+		let view = try BlockTextView(attributedString: AttributedString(markdown: "Repeat\n\nRepeat"))
 		expectNoDifference(text(in: view), [["Repeat"], ["Repeat"]])
 	}
 

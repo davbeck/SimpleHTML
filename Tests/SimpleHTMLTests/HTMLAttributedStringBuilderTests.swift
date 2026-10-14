@@ -37,17 +37,18 @@ func XCTRequireEqual<T: Equatable>(
 	_ expression2: T,
 	_ message: @autoclosure () -> String = "",
 	file: StaticString = #filePath,
-	line: UInt = #line
+	line: UInt = #line,
 ) throws {
 	if expression1 != expression2 {
 		let m = message()
 		throw TestRequireFailure(
-			message: m.isEmpty ? "\(expression1) != \(expression2)" : m)
+			message: m.isEmpty ? "\(expression1) != \(expression2)" : m,
+		)
 	}
 }
 
 class HTMLAttributedStringBuilderTests: XCTestCase {
-	func testBasicString() throws {
+	func testBasicString() {
 		let builder = HTMLAttributedStringBuilder(html: "Hello World!")
 		let string = builder.generatedAttributedString()
 
@@ -56,7 +57,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testStrongText() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: "Hello <strong>World</strong>!"
+			html: "Hello <strong>World</strong>!",
 		)
 		let string = builder.generatedAttributedString()
 
@@ -69,7 +70,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertEqual(string[runs[1].range].string, "World")
 		XCTAssertEqual(
 			runs[1].attributes.inlinePresentationIntent,
-			.stronglyEmphasized
+			.stronglyEmphasized,
 		)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
@@ -78,7 +79,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testBText() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: "Hello <b>World</b>!"
+			html: "Hello <b>World</b>!",
 		)
 		let string = builder.generatedAttributedString()
 
@@ -91,7 +92,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertEqual(string[runs[1].range].string, "World")
 		XCTAssertEqual(
 			runs[1].attributes.inlinePresentationIntent,
-			.stronglyEmphasized
+			.stronglyEmphasized,
 		)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
@@ -100,7 +101,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testEmText() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: "Hello <em>World</em>!"
+			html: "Hello <em>World</em>!",
 		)
 		let string = builder.generatedAttributedString()
 
@@ -113,7 +114,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertEqual(string[runs[1].range].string, "World")
 		XCTAssertEqual(
 			runs[1].attributes.inlinePresentationIntent,
-			.emphasized
+			.emphasized,
 		)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
@@ -122,7 +123,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testIText() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: "Hello <i>World</i>!"
+			html: "Hello <i>World</i>!",
 		)
 		let string = builder.generatedAttributedString()
 
@@ -135,7 +136,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertEqual(string[runs[1].range].string, "World")
 		XCTAssertEqual(
 			runs[1].attributes.inlinePresentationIntent,
-			.emphasized
+			.emphasized,
 		)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
@@ -144,7 +145,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testUnderlinedText() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: "Hello <u>World</u>!"
+			html: "Hello <u>World</u>!",
 		)
 		let string = builder.generatedAttributedString()
 
@@ -163,7 +164,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testLinks() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: #"Hello <a href="https://www.acstechnologies.com/realm/">World</a>!"#
+			html: #"Hello <a href="https://www.acstechnologies.com/realm/">World</a>!"#,
 		)
 		let string = builder.generatedAttributedString()
 
@@ -176,7 +177,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertEqual(string[runs[1].range].string, "World")
 		XCTAssertEqual(
 			runs[1].attributes.link,
-			try XCTUnwrap(URL(string: "https://www.acstechnologies.com/realm/"))
+			try XCTUnwrap(URL(string: "https://www.acstechnologies.com/realm/")),
 		)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
@@ -185,7 +186,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 
 	func testOverlapingAttributes() throws {
 		let builder = HTMLAttributedStringBuilder(
-			html: "Hello <strong><em>World</em></strong>!"
+			html: "Hello <strong><em>World</em></strong>!",
 		)
 		let string = builder.generatedAttributedString()
 
@@ -198,7 +199,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertEqual(string[runs[1].range].string, "World")
 		XCTAssertEqual(
 			runs[1].attributes.inlinePresentationIntent,
-			[.emphasized, .stronglyEmphasized]
+			[.emphasized, .stronglyEmphasized],
 		)
 
 		XCTAssertEqual(string[runs[2].range].string, "!")
@@ -259,8 +260,8 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 				.init(
 					.paragraph,
 					identity: 1,
-					parent: nil
-				)
+					parent: nil,
+				),
 			)
 		}
 
@@ -271,8 +272,8 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 				.init(
 					.paragraph,
 					identity: 2,
-					parent: nil
-				)
+					parent: nil,
+				),
 			)
 		}
 	}
@@ -425,7 +426,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		}
 	}
 
-	func testIgnoresWhitespace() throws {
+	func testIgnoresWhitespace() {
 		let builder = HTMLAttributedStringBuilder(html: """
 		<p>Hello</p>
 
@@ -442,7 +443,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		""")
 	}
 
-	func testCondensesWhitespace() throws {
+	func testCondensesWhitespace() {
 		let builder = HTMLAttributedStringBuilder(html: """
 		<p>\t  Hello   \n\t  World \t \n\n  </p>
 		""")
@@ -453,7 +454,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		""")
 	}
 
-	func testTracksErrors() throws {
+	func testTracksErrors() {
 		let builder = HTMLAttributedStringBuilder(html: """
 		<p>Hello <strong><em>World</strong></em>!</p>
 		""")
@@ -466,7 +467,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		XCTAssertFalse(builder.parseErrors.isEmpty)
 	}
 
-	func testLineBreaks() throws {
+	func testLineBreaks() {
 		let builder = HTMLAttributedStringBuilder(html: """
 		<p>How do I create a br?<br />is it like this?</p><p>Or maybe this is a p?</p>
 		""")
@@ -478,7 +479,7 @@ class HTMLAttributedStringBuilderTests: XCTestCase {
 		""")
 	}
 
-	func testPreserveWhitespace() throws {
+	func testPreserveWhitespace() {
 		let builder = HTMLAttributedStringBuilder(html: """
 		<p>enum Delimiter {<br />  case curlyBrace<br />}</p>
 		""", preserveWhitespace: true)

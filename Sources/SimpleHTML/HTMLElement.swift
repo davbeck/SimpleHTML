@@ -13,7 +13,7 @@ public struct HTMLElement: Sendable {
 		init(
 			parent: HTMLElement? = nil,
 			name: String,
-			attributes: [String: String] = [:]
+			attributes: [String: String] = [:],
 		) {
 			self.parent = parent
 			self.name = name
@@ -46,12 +46,12 @@ public struct HTMLElement: Sendable {
 	public init(
 		parent: HTMLElement?,
 		name: String,
-		attributes: [String: String]
+		attributes: [String: String],
 	) {
 		storage = Storage(
 			parent: parent,
 			name: name,
-			attributes: attributes
+			attributes: attributes,
 		)
 	}
 
@@ -115,7 +115,7 @@ extension HTMLElement: Codable {
 		try self.init(
 			parent: container.decodeIfPresent(HTMLElement.self, forKey: .parent),
 			name: container.decode(String.self, forKey: .name),
-			attributes: container.decode([String: String].self, forKey: .attributes)
+			attributes: container.decode([String: String].self, forKey: .attributes),
 		)
 	}
 
