@@ -16,7 +16,7 @@ public extension AttributedString {
 	init(html: String, preserveWhitespace: Bool = false) {
 		let builder = HTMLAttributedStringBuilder(
 			html: html,
-			preserveWhitespace: preserveWhitespace
+			preserveWhitespace: preserveWhitespace,
 		)
 		self = builder.generatedAttributedString()
 	}
@@ -49,7 +49,9 @@ public extension AttributeScopes {
 	}
 
 	/// The scope for reading and writing HTML metadata on attributed text.
-	var html: HTMLAttributes.Type { HTMLAttributes.self }
+	var html: HTMLAttributes.Type {
+		HTMLAttributes.self
+	}
 }
 
 /// Converts HTML parser events into semantic attributed text and element metadata.
@@ -129,7 +131,7 @@ public class HTMLAttributedStringBuilder {
 		self.init(
 			html: data,
 			encoding: .utf8,
-			preserveWhitespace: preserveWhitespace
+			preserveWhitespace: preserveWhitespace,
 		)
 	}
 
@@ -141,7 +143,7 @@ public class HTMLAttributedStringBuilder {
 	public init(
 		html: Data,
 		encoding: String.Encoding = .utf8,
-		preserveWhitespace: Bool = false
+		preserveWhitespace: Bool = false,
 	) {
 		self.data = html
 
@@ -188,7 +190,7 @@ public class HTMLAttributedStringBuilder {
 		attributesStack.last ?? AttributeContainer()
 	}
 
-	// this is incremented every time a new block level element is detected
+	/// this is incremented every time a new block level element is detected
 	private var intentID = 1
 
 	private func nextIntentID() -> Int {
@@ -199,7 +201,7 @@ public class HTMLAttributedStringBuilder {
 
 	private func nextOrdinal(for parent: PresentationIntent?) -> Int {
 		let ordinal: Int
-		if let parent = parent {
+		if let parent {
 			ordinal = ordinalStack[parent, default: 1]
 			ordinalStack[parent] = ordinal + 1
 		} else {
@@ -214,7 +216,7 @@ extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 	public func parser(
 		_ parser: HTMLParser,
 		didStartElement elementName: String,
-		attributes attributeDict: [AnyHashable: Any]
+		attributes attributeDict: [AnyHashable: Any],
 	) {
 		var attributes = currentAttributes
 		let parent = attributes.presentationIntent
@@ -222,7 +224,7 @@ extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 		let element = HTMLElement(
 			parent: attributes.html.element,
 			name: elementName,
-			attributes: attributeDict as? [String: String] ?? [:]
+			attributes: attributeDict as? [String: String] ?? [:],
 		)
 		attributes.html.element = element
 
@@ -244,25 +246,25 @@ extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 			attributes.presentationIntent = .init(
 				.paragraph,
 				identity: nextIntentID(),
-				parent: parent
+				parent: parent,
 			)
 		case "ul":
 			attributes.presentationIntent = .init(
 				.unorderedList,
 				identity: nextIntentID(),
-				parent: parent
+				parent: parent,
 			)
 		case "ol":
 			attributes.presentationIntent = .init(
 				.orderedList,
 				identity: nextIntentID(),
-				parent: parent
+				parent: parent,
 			)
 		case "li":
 			attributes.presentationIntent = .init(
 				.listItem(ordinal: nextOrdinal(for: parent)),
 				identity: nextIntentID(),
-				parent: parent
+				parent: parent,
 			)
 		case "img":
 			let urlString = attributeDict["src"] as? String ?? ""
@@ -284,14 +286,14 @@ extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 
 	public func parser(
 		_ parser: HTMLParser,
-		didEndElement elementName: String
+		didEndElement elementName: String,
 	) {
 		attributesStack.removeLast()
 	}
 
 	public func parser(
 		_ parser: HTMLParser,
-		foundCharacters string: String
+		foundCharacters string: String,
 	) {
 		let container = currentAttributes
 		let new = AttributedString(string, attributes: container)
@@ -302,7 +304,7 @@ extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 	public func parserFoundProcessingInstruction(
 		_ parser: HTMLParser,
 		target: String,
-		data: String?
+		data: String?,
 	) {}
 
 	public func parserDidEndDocument(_ parser: HTMLParser) {
@@ -330,7 +332,7 @@ extension HTMLAttributedStringBuilder: HTMLParserDelegate {
 
 	public func parser(
 		_ parser: HTMLParser,
-		parseErrorOccurred parseError: ParseError
+		parseErrorOccurred parseError: ParseError,
 	) {
 		// errors can be pretty mundane and not actually cause issues
 		self.parseErrors.append(parseError)

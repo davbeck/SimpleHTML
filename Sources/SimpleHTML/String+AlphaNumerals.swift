@@ -15,7 +15,7 @@ extension String {
 		while number > 0 {
 			self.insert(
 				characters[number % characters.count],
-				at: self.startIndex
+				at: self.startIndex,
 			)
 			number = (number - 1) / characters.count
 		}

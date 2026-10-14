@@ -23,8 +23,8 @@ struct BlockTextViewSnapshotTests {
 			}
 		}
 
-		// Equivalent content exercises wrapping, inline styles, three nesting levels,
-		// continuation paragraphs, and repeated paragraphs/items.
+		/// Equivalent content exercises wrapping, inline styles, three nesting levels,
+		/// continuation paragraphs, and repeated paragraphs/items.
 		private static let htmlFixture = """
 		<p>A paragraph with <strong>bold</strong>, <em>italic</em>, and a <a href="https://example.com">link</a> that wraps onto another line.</p>
 		<ol><li><p>First ordered item</p><p>Continuation of the same item.</p><ol><li>Nested ordered item<ol><li>Third level</li></ol></li></ol></li><li>Second ordered item</li></ol>
@@ -58,7 +58,9 @@ struct BlockTextViewSnapshotTests {
 	enum Appearance: String, CaseIterable {
 		case light, dark
 
-		var colorScheme: ColorScheme { self == .light ? .light : .dark }
+		var colorScheme: ColorScheme {
+			self == .light ? .light : .dark
+		}
 	}
 
 	enum TextSize: String, CaseIterable {
@@ -101,7 +103,7 @@ struct BlockTextViewSnapshotTests {
 			Source.html.view,
 			appearance: appearance,
 			name: appearance.rawValue,
-			testName: "appearance"
+			testName: "appearance",
 		)
 	}
 
@@ -111,7 +113,7 @@ struct BlockTextViewSnapshotTests {
 			source.view,
 			textSize: textSize,
 			name: "\(source.rawValue)-\(textSize.rawValue)",
-			testName: "dynamicType"
+			testName: "dynamicType",
 		)
 	}
 
@@ -120,7 +122,7 @@ struct BlockTextViewSnapshotTests {
 		snapshot(
 			styling.apply(to: source.view),
 			name: "\(source.rawValue)-\(styling.rawValue)",
-			testName: "topLevelTextModifiers"
+			testName: "topLevelTextModifiers",
 		)
 	}
 
@@ -130,7 +132,7 @@ struct BlockTextViewSnapshotTests {
 			source.view,
 			width: 220,
 			name: source.rawValue,
-			testName: "narrowLayout"
+			testName: "narrowLayout",
 		)
 	}
 
@@ -142,7 +144,7 @@ struct BlockTextViewSnapshotTests {
 		name: String,
 		testName: String,
 		file: StaticString = #filePath,
-		line: UInt = #line
+		line: UInt = #line,
 	) {
 		let view = content
 			.padding(16)
@@ -160,12 +162,12 @@ struct BlockTextViewSnapshotTests {
 			hostingView.layoutSubtreeIfNeeded()
 			assertSnapshot(
 				of: hostingView, as: .image, named: "macOS-\(name)",
-				file: file, testName: testName, line: line
+				file: file, testName: testName, line: line,
 			)
 		#elseif os(iOS)
 			assertSnapshot(
 				of: view, as: .image(layout: .sizeThatFits, traits: UITraitCollection(displayScale: 2)),
-				named: "iOS-\(name)", file: file, testName: testName, line: line
+				named: "iOS-\(name)", file: file, testName: testName, line: line,
 			)
 		#endif
 	}

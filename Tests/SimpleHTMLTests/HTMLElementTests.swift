@@ -14,7 +14,7 @@ struct HTMLElementTests {
 	@Test(arguments: [nil, "", " \t\n\r "] as [String?])
 	func emptyClassAttributes(value: String?) {
 		let element = HTMLElement(
-			parent: nil, name: "span", attributes: value.map { ["class": $0] } ?? [:]
+			parent: nil, name: "span", attributes: value.map { ["class": $0] } ?? [:],
 		)
 		expectNoDifference(element.classes, [])
 		#expect(!element.has(class: ""))

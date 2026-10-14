@@ -22,7 +22,9 @@ extension PresentationIntent {
 
 	var listItem: IntentType? {
 		components.first {
-			if case .listItem = $0.kind { return true }
+			if case .listItem = $0.kind {
+				return true
+			}
 			return false
 		}
 	}
@@ -71,7 +73,7 @@ struct BlockTextLine: View {
 						// size based on font from underlying text
 						.frame(
 							width: proxy.size.height / 3,
-							height: proxy.size.height / 3
+							height: proxy.size.height / 3,
 						)
 						// center in geometry reader
 						.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

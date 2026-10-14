@@ -29,38 +29,38 @@ public protocol HTMLParserDelegate: AnyObject {
 	func parser(
 		_ parser: HTMLParser,
 		didStartElement elementName: String,
-		attributes attributeDict: [AnyHashable: Any]
+		attributes attributeDict: [AnyHashable: Any],
 	)
 
 	/// Reports a closing element after libxml2 recovery.
 	func parser(
 		_ parser: HTMLParser,
-		didEndElement elementName: String
+		didEndElement elementName: String,
 	)
 
 	/// Reports decoded character data, including expanded entities.
 	func parser(
 		_ parser: HTMLParser,
-		foundCharacters string: String
+		foundCharacters string: String,
 	)
 
 	/// Reports a comment without its markup delimiters.
 	func parser(
 		_ parser: HTMLParser,
-		foundComment comment: String
+		foundComment comment: String,
 	)
 
 	/// Reports a CDATA block.
 	func parser(
 		_ parser: HTMLParser,
-		foundCDATA cdata: Data
+		foundCDATA cdata: Data,
 	)
 
 	/// Reports a processing instruction and its optional data.
 	func parserFoundProcessingInstruction(
 		_ parser: HTMLParser,
 		target: String,
-		data: String?
+		data: String?,
 	)
 
 	/// Called when the document ends.
@@ -69,7 +69,7 @@ public protocol HTMLParserDelegate: AnyObject {
 	/// Reports a parser diagnostic; recovery may continue.
 	func parser(
 		_ parser: HTMLParser,
-		parseErrorOccurred parseError: ParseError
+		parseErrorOccurred parseError: ParseError,
 	)
 }
 
@@ -80,12 +80,12 @@ public extension HTMLParserDelegate {
 
 	func parser(
 		_ parser: HTMLParser,
-		foundComment comment: String
+		foundComment comment: String,
 	) {}
 
 	func parser(
 		_ parser: HTMLParser,
-		foundCDATA cdata: Data
+		foundCDATA cdata: Data,
 	) {}
 }
 
@@ -300,7 +300,7 @@ public class HTMLParser: SAXErrorHandler {
 				buffer.bindMemory(to: CChar.self).baseAddress,
 				Int32(data.count),
 				nil,
-				charEnc
+				charEnc,
 			)
 		}
 
@@ -309,7 +309,7 @@ public class HTMLParser: SAXErrorHandler {
 			HTML_PARSE_RECOVER.rawValue |
 				HTML_PARSE_NONET.rawValue |
 				HTML_PARSE_COMPACT.rawValue |
-				HTML_PARSE_NOBLANKS.rawValue
+				HTML_PARSE_NOBLANKS.rawValue,
 		)
 		htmlCtxtUseOptions(_parserContext, Int32(bitPattern: options.rawValue))
 
