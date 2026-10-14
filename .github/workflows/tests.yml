@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests
         env:
-          TMPDIR: ${{ runner.temp }}
+          SNAPSHOT_ARTIFACTS: ${{ runner.temp }}
         run: swift test
 
       - name: Upload failed snapshots
