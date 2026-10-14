@@ -1,14 +1,11 @@
 public import SwiftUI
-#if canImport(UIKit)
-	import UIKit
-#endif
 
 /// Displays attributed text as blocks, including paragraphs and nested lists.
 ///
 /// Accepts strings parsed from HTML or Foundation's full Markdown parser.
 /// SwiftUI's `Text` handles inline attributes such as emphasis and links.
 public struct BlockTextView: View {
-	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
+	@ScaledMetric(relativeTo: .body) private var spacing: CGFloat = 10
 
 	public var attributedString: AttributedString
 
@@ -36,14 +33,6 @@ public struct BlockTextView: View {
 	func showsListMarker(in block: [AttributedSubstring], at index: Int) -> Bool {
 		guard let item = block[index].presentationIntent?.listItem else { return false }
 		return !block[..<index].contains { $0.presentationIntent?.listItem == item }
-	}
-
-	private var spacing: CGFloat {
-		#if canImport(UIKit)
-			UIFontMetrics.default.scaledValue(for: 10)
-		#else
-			10
-		#endif
 	}
 
 	public var body: some View {

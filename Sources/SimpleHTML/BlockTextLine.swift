@@ -1,7 +1,4 @@
 import SwiftUI
-#if canImport(UIKit)
-	import UIKit
-#endif
 
 extension PresentationIntent {
 	var list: IntentType? {
@@ -32,20 +29,11 @@ extension PresentationIntent {
 }
 
 struct BlockTextLine: View {
-	// just needed to get updates when it changes
-	@Environment(\.dynamicTypeSize) var dynamicTypeSize
+	/// How far we indent each level (similar to tab indent levels).
+	@ScaledMetric(relativeTo: .body) private var indentation: CGFloat = 24
 
 	var string: AttributedSubstring
 	var showsListMarker = true
-
-	/// How far we indent each level (similar to tab indent levels)
-	var indentation: CGFloat {
-		#if canImport(UIKit)
-			UIFontMetrics.default.scaledValue(for: 24)
-		#else
-			return 24
-		#endif
-	}
 
 	@ViewBuilder
 	func listMarker(for presentationIntent: PresentationIntent) -> some View {
