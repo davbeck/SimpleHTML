@@ -10,6 +10,10 @@ Use Xcode with a Swift 6.2 or newer toolchain. Open `Package.swift` in Xcode or 
 
 Keep parsing, attributed-string construction, and view rendering separate. Changes to supported HTML should include tests of the generated attributes; layout changes should be checked against HTML and Markdown inputs. Use Swift Testing for new tests. Do not use `.serialized` to work around flaky tests.
 
+Run `bin/format` and `bin/lint` before committing. Both use package plugins with pinned tool versions, so no separate formatter or linter installation is needed. SwiftFormat covers Swift sources and tests; SwiftLint checks the package manifest and production sources for forced casts, forced tries, forced unwraps, and unsafe concurrency overrides.
+
+GitHub Actions runs the full macOS test suite on the `xcode-27` preview runner, matching the macOS 27 snapshot baseline, and the full iOS suite on an iPhone 17 simulator running iOS 26.5 with Xcode 26.6. Tests and lint run for pull requests and pushes to `main`. A separate workflow formats branch pushes and commits any Swift formatting changes using the repository's default token. All three workflows also support manual runs.
+
 ## Running tests
 
 Run the macOS tests with:
