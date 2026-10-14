@@ -5,6 +5,7 @@ public import SwiftUI
 /// Accepts strings parsed from HTML or Foundation's full Markdown parser.
 /// SwiftUI's `Text` handles inline attributes such as emphasis and links.
 public struct BlockTextView: View {
+	@Environment(\.multilineTextAlignment) private var textAlignment
 	@ScaledMetric(relativeTo: .body) private var spacing: CGFloat = 10
 
 	public var attributedString: AttributedString
@@ -35,11 +36,19 @@ public struct BlockTextView: View {
 		return !block[..<index].contains { $0.presentationIntent?.listItem == item }
 	}
 
+	private var horizontalAlignment: HorizontalAlignment {
+		switch textAlignment {
+		case .leading: .leading
+		case .center: .center
+		case .trailing: .trailing
+		}
+	}
+
 	public var body: some View {
-		VStack(alignment: .leading, spacing: spacing) {
+		VStack(alignment: horizontalAlignment, spacing: spacing) {
 			// Positions distinguish repeated, identical paragraphs and list items.
 			ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
-				VStack(alignment: .leading, spacing: spacing / 8) {
+				VStack(alignment: horizontalAlignment, spacing: spacing / 8) {
 					ForEach(Array(block.enumerated()), id: \.offset) { index, string in
 						BlockTextLine(string: string, showsListMarker: showsListMarker(in: block, at: index))
 					}
@@ -47,7 +56,7 @@ public struct BlockTextView: View {
 			}
 		}
 		.lineLimit(nil)
-		.frame(maxWidth: .infinity, alignment: .leading)
+		.frame(maxWidth: .infinity, alignment: Alignment(horizontal: horizontalAlignment, vertical: .center))
 		.fixedSize(horizontal: false, vertical: true)
 	}
 }

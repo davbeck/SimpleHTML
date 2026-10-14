@@ -75,7 +75,7 @@ struct BlockTextViewSnapshotTests {
 	}
 
 	enum Styling: String, CaseIterable {
-		case title, boldItalic, monospaced, coloredAndSpaced, centered
+		case title, boldItalic, monospaced, coloredAndSpaced, centered, trailing
 
 		@ViewBuilder func apply(to view: some View) -> some View {
 			switch self {
@@ -89,6 +89,8 @@ struct BlockTextViewSnapshotTests {
 				view.foregroundColor(.purple).tint(.orange).lineSpacing(6)
 			case .centered:
 				view.multilineTextAlignment(.center)
+			case .trailing:
+				view.multilineTextAlignment(.trailing)
 			}
 		}
 	}

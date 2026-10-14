@@ -30,6 +30,9 @@ numbered or bulleted markers. Inline formatting and links are rendered by SwiftU
 `Text`. It does not provide specialized layouts for Markdown tables, headings,
 block quotes, or code blocks.
 
+Apply `.multilineTextAlignment(.center)` or `.multilineTextAlignment(.trailing)`
+to align both the text within paragraphs and the block containers.
+
 ## Snapshot tests
 
 `BlockTextViewSnapshotTests` records separate macOS and iOS images for both HTML
