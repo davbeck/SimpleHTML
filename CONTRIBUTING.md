@@ -53,6 +53,8 @@ Do not regenerate snapshots just to make an unexplained failure pass. Investigat
 
 The suite renders content-sized canvases rendered directly by SwiftUI at 4× pixel density with a 16-point margin, a white background, a thin gray border, and fixed light appearance and locale. References were recorded on macOS 27.0.1. The suite's PNGs in `Sources/SimpleHTML/SimpleHTML.docc/Resources/` are both the snapshot baselines and the published assets; README links to the same files.
 
+Documentation images use a perceptual color precision of 0.99 while still requiring every pixel to match. Local and hosted rendering can differ by one value in a few 8-bit color channels during conversion to sRGB. Behavior snapshots retain exact pixel comparisons.
+
 To regenerate them, temporarily set this suite's trait to `.snapshots(record: .all)`, then run:
 
 ```sh

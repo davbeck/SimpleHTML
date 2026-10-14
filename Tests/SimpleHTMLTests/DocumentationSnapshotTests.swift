@@ -168,8 +168,10 @@
 			let directory = URL(fileURLWithPath: "\(file)")
 				.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
 				.appendingPathComponent("Sources/SimpleHTML/SimpleHTML.docc/Resources")
+			// ImageRenderer's color conversion can round a channel by one byte across
+			// graphics backends. Require every pixel to match within a small color delta.
 			if let failure = verifySnapshot(
-				of: image, as: .image, named: name,
+				of: image, as: .image(perceptualPrecision: 0.99), named: name,
 				snapshotDirectory: directory.path,
 				file: file, testName: "documentation", line: line,
 			) {
