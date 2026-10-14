@@ -160,8 +160,27 @@ struct BlockTextViewSnapshotTests {
 			hostingView.appearance = NSAppearance(named: appearance == .light ? .aqua : .darkAqua)
 			hostingView.frame.size = hostingView.fittingSize
 			hostingView.layoutSubtreeIfNeeded()
+			// The references use 2× pixels, regardless of the machine's display scale.
+			let bitmap = NSBitmapImageRep(
+				bitmapDataPlanes: nil,
+				pixelsWide: Int(hostingView.bounds.width * 2),
+				pixelsHigh: Int(hostingView.bounds.height * 2),
+				bitsPerSample: 8,
+				samplesPerPixel: 4,
+				hasAlpha: true,
+				isPlanar: false,
+				colorSpaceName: .calibratedRGB,
+				bytesPerRow: 0,
+				bitsPerPixel: 0,
+			)!
+			bitmap.size = hostingView.bounds.size
+			hostingView.cacheDisplay(in: hostingView.bounds, to: bitmap)
+			let image = NSImage(
+				cgImage: bitmap.cgImage!,
+				size: CGSize(width: bitmap.pixelsWide, height: bitmap.pixelsHigh),
+			)
 			assertSnapshot(
-				of: hostingView, as: .image, named: "macOS-\(name)",
+				of: image, as: .image, named: "macOS-\(name)",
 				file: file, testName: testName, line: line,
 			)
 		#elseif os(iOS)

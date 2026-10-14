@@ -26,16 +26,17 @@ Run the iOS tests with:
 
 ```sh
 xcodebuild -scheme SimpleHTML \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' test
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' \
+  IPHONEOS_DEPLOYMENT_TARGET=16.0 test
 ```
 
-The test suite includes parsing and whitespace tests, block-layout tests, and image snapshots. Snapshot rendering depends on OS fonts, so use the baseline platform versions when comparing images.
+The test suite includes parsing and whitespace tests, block-layout tests, and image snapshots. The iOS test build targets iOS 16 because the snapshot cases exercise SwiftUI's view-level bold and italic modifiers. The library continues to support iOS 15. Snapshot rendering depends on OS fonts, so use the baseline platform versions when comparing images.
 
 ## Snapshot tests
 
 `BlockTextViewSnapshotTests` records separate macOS and iOS images for both HTML and Markdown. One light/dark pair covers appearance; the remaining cases run in light mode. Cases cover small, large, XXXL, and accessibility Dynamic Type sizes; font, bold/italic, monospaced text, foreground color, tint, line spacing, and multiline alignment; and a narrow layout. Fixtures include wrapped text, links, three levels of lists, continuation paragraphs, and repeated content.
 
-The iOS references were recorded on an iPhone 17 simulator running iOS 26.5 at a fixed 2× display scale. The macOS references were recorded on macOS 27.0.1. Dynamic Type sizes affect the iOS references; macOS currently keeps the same text size.
+The iOS references were recorded on an iPhone 17 simulator running iOS 26.5 at a fixed 2× display scale. The macOS references were recorded on macOS 27.0.1, also at 2×. The macOS helper creates a bitmap at that scale so tests do not depend on whether the machine has a Retina display. Dynamic Type sizes affect the iOS references; macOS currently keeps the same text size.
 
 To intentionally update the baselines:
 
