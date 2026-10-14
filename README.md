@@ -33,7 +33,8 @@ block quotes, or code blocks.
 ## Snapshot tests
 
 `BlockTextViewSnapshotTests` records separate macOS and iOS images for both HTML
-and Markdown. It covers light/dark appearance; small, large, XXXL, and
+and Markdown. One light/dark pair covers appearance; the remaining cases run in
+light mode. It covers small, large, XXXL, and
 accessibility Dynamic Type sizes; top-level font, bold/italic, monospaced font,
 foreground color/tint/line spacing, and multiline alignment; and a narrow layout.
 Fixtures include wrapped text, links, three levels of ordered and unordered lists,

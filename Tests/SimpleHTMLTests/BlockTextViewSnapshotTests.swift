@@ -93,25 +93,23 @@ struct BlockTextViewSnapshotTests {
 		}
 	}
 
-	struct Variant {
-		var appearance: Appearance
-		var textSize: TextSize
-
-		static var all: [Self] {
-			Appearance.allCases.flatMap { appearance in
-				TextSize.allCases.map { Self(appearance: appearance, textSize: $0) }
-			}
-		}
+	@Test(arguments: Appearance.allCases)
+	func appearance(appearance: Appearance) {
+		snapshot(
+			Source.html.view,
+			appearance: appearance,
+			name: appearance.rawValue,
+			testName: "appearance"
+		)
 	}
 
-	@Test(arguments: Source.allCases, Variant.all)
-	func appearanceAndDynamicType(source: Source, variant: Variant) {
+	@Test(arguments: Source.allCases, TextSize.allCases)
+	func dynamicType(source: Source, textSize: TextSize) {
 		snapshot(
 			source.view,
-			appearance: variant.appearance,
-			textSize: variant.textSize,
-			name: "\(source.rawValue)-\(variant.appearance.rawValue)-\(variant.textSize.rawValue)",
-			testName: "appearanceAndDynamicType"
+			textSize: textSize,
+			name: "\(source.rawValue)-\(textSize.rawValue)",
+			testName: "dynamicType"
 		)
 	}
 
