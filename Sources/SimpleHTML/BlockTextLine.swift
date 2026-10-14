@@ -83,7 +83,7 @@ struct BlockTextLine: View {
 	}
 
 	var body: some View {
-		HStack {
+		HStack(alignment: .firstTextBaseline) {
 			if let presentationIntent = string.presentationIntent,
 			   presentationIntent.indentationLevel > 0
 			{
