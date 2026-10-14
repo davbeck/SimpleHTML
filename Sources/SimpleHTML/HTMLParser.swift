@@ -4,53 +4,69 @@ public import SAXErrorHandler
 
 // based on DTHTMLParser https://github.com/Cocoanetics/DTFoundation/blob/develop/Core/Source/DTHTMLParser/DTHTMLParser.m
 
+/// A diagnostic reported by libxml2 while interpreting HTML.
+///
+/// Its debug description contains the parser's message. Recovery may still
+/// produce usable output after a diagnostic.
 public struct ParseError: Error {
 	var message: String
 }
 
-extension ParseError: LocalizedError {
-	public var errorDescription: String? {
+extension ParseError: CustomDebugStringConvertible {
+	public var debugDescription: String {
 		message
 	}
 }
 
+/// Receives synchronous events from ``HTMLParser`` on the calling thread.
+///
+/// The parser holds its delegate weakly. Retain the delegate until parsing ends.
 public protocol HTMLParserDelegate: AnyObject {
+	/// Called before document events begin.
 	func parserDidStartDocument(_ parser: HTMLParser)
 
+	/// Reports an opening element and its source attributes.
 	func parser(
 		_ parser: HTMLParser,
 		didStartElement elementName: String,
 		attributes attributeDict: [AnyHashable: Any]
 	)
 
+	/// Reports a closing element after libxml2 recovery.
 	func parser(
 		_ parser: HTMLParser,
 		didEndElement elementName: String
 	)
 
+	/// Reports decoded character data, including expanded entities.
 	func parser(
 		_ parser: HTMLParser,
 		foundCharacters string: String
 	)
 
+	/// Reports a comment without its markup delimiters.
 	func parser(
 		_ parser: HTMLParser,
 		foundComment comment: String
 	)
 
+	/// Reports a CDATA block.
 	func parser(
 		_ parser: HTMLParser,
 		foundCDATA cdata: Data
 	)
 
+	/// Reports a processing instruction and its optional data.
 	func parserFoundProcessingInstruction(
 		_ parser: HTMLParser,
 		target: String,
 		data: String?
 	)
 
+	/// Called when the document ends.
 	func parserDidEndDocument(_ parser: HTMLParser)
 
+	/// Reports a parser diagnostic; recovery may continue.
 	func parser(
 		_ parser: HTMLParser,
 		parseErrorOccurred parseError: ParseError
@@ -75,7 +91,37 @@ public extension HTMLParserDelegate {
 
 private func _startDocument() {}
 
+/// Parses HTML with libxml2 and delivers events to a weak delegate.
+///
+/// ## Overview
+///
+/// `HTMLParser` wraps libxml2's event-driven HTML parser. It does not create a DOM, attributed string, or view. Assign an ``HTMLParserDelegate`` and call ``parse()`` to receive synchronous events on the calling thread.
+///
+/// ```swift
+/// let parser = HTMLParser(data: Data(html.utf8), encoding: .utf8)
+/// parser.delegate = delegate
+/// let succeeded = parser.parse()
+/// ```
+///
+/// The delegate is weak: retain it for the entire parse. Use a fresh parser for each document, and do not call `parse()` concurrently on the same instance. ``abortParsing()`` stops parsing and disables subsequent callbacks; create another parser to process another document after cancellation.
+///
+/// ### Events and recovery
+///
+/// The parser reports document start/end, start/end elements, character data, comments, CDATA, processing instructions, and diagnostics. Document start/end, comment, and CDATA callbacks have default no-op implementations in the delegate protocol. Implement the remaining requirements even if your app ignores them.
+///
+/// Character callbacks contain decoded text, including expanded entities. The parser accumulates libxml2's character chunks and flushes them around element boundaries; do not assume one callback per source text node. HTML recovery may insert elements such as `html` and `body` and correct malformed nesting. Events describe libxml2's interpretation rather than an exact replay of the source.
+///
+/// Parsing uses recovery, compact storage, blank-node suppression, and the no-network option. It does not fetch stylesheets or media, evaluate CSS, or execute JavaScript.
+///
+/// ### Errors and positions
+///
+/// ``parse()`` returns `true` when libxml2 reports success and parsing was not aborted. Diagnostics are delivered through ``HTMLParserDelegate/parser(_:parseErrorOccurred:)``; recovery can produce useful output even when the result is `false`.
+///
+/// The ``parseError`` property currently remains `nil`: the implementation forwards errors to the delegate without storing them there. Collect errors in your delegate, or use ``HTMLAttributedStringBuilder/parseErrors``. ``lineNumber`` and ``columnNumber`` expose libxml2's current source position, and are most useful inside callbacks.
+///
+/// See <doc:CustomParsing> for delegates that extract plain text or build Core Text attributes directly.
 public class HTMLParser: SAXErrorHandler {
+	/// The event receiver, which the caller must retain while parsing.
 	public weak var delegate: (any HTMLParserDelegate)?
 
 	private var data: Data
@@ -89,13 +135,10 @@ public class HTMLParser: SAXErrorHandler {
 
 	private var isAborting: Bool = false
 
-	/**
-	 Initializes the receiver with the HTML contents encapsulated in a given data object.
-
-	 @param data An `NSData` object containing XML markup.
-	 @param encoding The encoding used for encoding the HTML data
-	 @returns An initialized `DTHTMLParser` object or nil if an error occurs.
-	 */
+	/// Creates a parser for the supplied HTML bytes.
+	/// - Parameters:
+	///   - data: HTML source data.
+	///   - encoding: The encoding of the input bytes.
 	public init(data: Data, encoding: String.Encoding) {
 		self.data = data
 		self.encoding = encoding
@@ -222,18 +265,17 @@ public class HTMLParser: SAXErrorHandler {
 		}
 	}
 
+	/// Forwards a libxml2 error message to the delegate.
+	/// - Parameter message: The diagnostic text supplied by the SAX error bridge.
 	public func parseErrorOccurred(_ message: String) {
 		let error = ParseError(message: message)
 		delegate?.parser(self, parseErrorOccurred: error)
 	}
 
-	/**
-	 Starts the event-driven parsing operation.
-
-	 If you invoke this method, the delegate, if it implements parser:parseErrorOccurred:, is informed of the cancelled parsing operation.
-
-	 @returns `YES` if parsing is successful and `NO` in there is an error or if the parsing operation is aborted.
-	 */
+	/// Parses the document synchronously, recovering from malformed HTML where possible.
+	/// - Returns: `true` if libxml2 reports success and parsing was not aborted.
+	///
+	/// Collect diagnostics through the delegate. Use a fresh parser for each document.
 	public func parse() -> Bool {
 		// detect encoding if necessary
 		var charEnc: xmlCharEncoding = XML_CHAR_ENCODING_NONE
@@ -277,12 +319,9 @@ public class HTMLParser: SAXErrorHandler {
 		return result == 0 && !isAborting
 	}
 
-	/**
-	 Stops the parser object.
-
-	 @see parse
-	 @see parserError
-	 */
+	/// Stops the current parse and disables subsequent parser callbacks.
+	///
+	/// Create a new parser to parse another document after cancellation.
 	public func abortParsing() {
 		if let _parserContext {
 			// apparently this frees it too
@@ -303,47 +342,29 @@ public class HTMLParser: SAXErrorHandler {
 		_handler.processingInstruction = nil
 	}
 
-	/**
-	 Returns the column number of the XML document being processed by the receiver.
-
-	 The column refers to the nesting level of the HTML elements in the document. You may invoke this method once a parsing operation has begun or after an error occurs.
-	 */
+	/// The current source column reported by libxml2. Read it inside a callback.
 	public var columnNumber: Int {
 		.init(xmlSAX2GetColumnNumber(_parserContext))
 	}
 
-	/**
-	 Returns the line number of the HTML document being processed by the receiver.
-
-	 You may invoke this method once a parsing operation has begun or after an error occurs.
-	 */
+	/// The current source line reported by libxml2. Read it inside a callback.
 	public var lineNumber: Int {
 		.init(xmlSAX2GetLineNumber(_parserContext))
 	}
 
-	/**
-	 Returns an `NSError` object from which you can obtain information about a parsing error.
-
-	 You may invoke this method after a parsing operation abnormally terminates to determine the cause of error.
-	 */
+	/// A reserved error property that currently remains `nil`.
+	///
+	/// Diagnostics are forwarded to the delegate instead of stored here.
 	public private(set) var parseError: (any Error)?
 
-	/**
-	 Returns the public identifier of the external entity referenced in the HTML document.
-
-	 You may invoke this method once a parsing operation has begun or after an error occurs.
-	 */
+	/// The current external entity's public identifier, or an empty string.
 	public var publicID: String {
 		guard let publicID = xmlSAX2GetPublicId(_parserContext) else { return "" }
 
 		return String(cString: publicID)
 	}
 
-	/**
-	 Returns the system identifier of the external entity referenced in the HTML document.
-
-	 You may invoke this method once a parsing operation has begun or after an error occurs.
-	 */
+	/// The current external entity's system identifier, or an empty string.
 	public var systemID: String {
 		guard let systemID = xmlSAX2GetSystemId(_parserContext) else { return "" }
 

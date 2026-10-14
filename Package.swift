@@ -45,7 +45,8 @@ let package = Package(
 				.product(name: "CustomDump", package: "swift-custom-dump"),
 				.product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
 			],
-			exclude: ["__Snapshots__"]
+			exclude: ["__Snapshots__", "Resources/README.md"],
+			resources: [.copy("Resources/custom-emoji.png")]
 		),
 	]
 )

@@ -6,6 +6,13 @@ public import Foundation
 #endif
 
 public extension AttributedString {
+	/// Parses HTML using the default tag mapping.
+	///
+	/// Block boundaries are stored as presentation intents, not newline characters. Use
+	/// ``HTMLAttributedStringBuilder`` directly to inspect parsing diagnostics.
+	/// - Parameters:
+	///   - html: The HTML source to parse.
+	///   - preserveWhitespace: Whether to skip the builder's final whitespace normalization.
 	init(html: String, preserveWhitespace: Bool = false) {
 		let builder = HTMLAttributedStringBuilder(
 			html: html,
@@ -15,32 +22,108 @@ public extension AttributedString {
 	}
 }
 
+/// Marks generated text that the builder must exclude from whitespace normalization.
+///
+/// The builder sets this attribute on newlines generated for `br` elements.
 public enum HTMLRawTextAttribute: AttributedStringKey, CodableAttributedStringKey {
 	public typealias Value = Bool
 	public static let name = "rawText"
 }
 
+/// Associates an attributed-string run with its innermost HTML element and ancestry.
 public enum HTMLElementAttribute: AttributedStringKey, CodableAttributedStringKey {
 	public typealias Value = HTMLElement
 	public static let name = "element"
 }
 
 public extension AttributeScopes {
+	/// HTML metadata together with Foundation's standard attributed-string attributes.
 	struct HTMLAttributes: AttributeScope {
+		/// Whether this text bypasses the builder's whitespace normalization.
 		public let rawText: HTMLRawTextAttribute
+		/// The HTML element associated with the run.
 		public let element: HTMLElementAttribute
 
+		/// Standard Foundation attributes, including links and presentation intents.
 		public let foundation: FoundationAttributes
 	}
 
+	/// The scope for reading and writing HTML metadata on attributed text.
 	var html: HTMLAttributes.Type { HTMLAttributes.self }
 }
 
+/// Converts HTML parser events into semantic attributed text and element metadata.
+///
+/// ## Overview
+///
+/// The builder is an ``HTMLParserDelegate`` that translates parser events into a Swift `AttributedString`. Use it when you want parsed text without a view, need diagnostics, or want to post-process HTML metadata.
+///
+/// ```swift
+/// import Foundation
+/// import SimpleHTML
+///
+/// let builder = HTMLAttributedStringBuilder(html: "<p>Hello <strong>world</strong>.</p>")
+/// let text = builder.generatedAttributedString()
+/// let diagnostics = builder.parseErrors.map { String(reflecting: $0) }
+/// ```
+///
+/// For the common case, `AttributedString(html: "<p>Hello</p>")` is a convenience initializer using the same builder. It returns the text without exposing diagnostics.
+///
+/// ### Supported tags
+///
+/// | HTML | Attributed-string representation |
+/// | --- | --- |
+/// | `strong`, `b` | Strong inline presentation intent |
+/// | `em`, `i` | Emphasized inline presentation intent |
+/// | `u` | Platform underline attribute |
+/// | `a` | Link URL from `href` |
+/// | `p` | Paragraph presentation intent |
+/// | `ul`, `ol`, `li` | Nested list and list-item presentation intents |
+/// | `br` | A literal newline marked as raw text |
+/// | `img` | `imageURL` from `src`, with `alt` text or U+FFFC as its content |
+/// | `iframe` | U+FFFC placeholder with element metadata |
+///
+/// Other elements retain metadata and pass through their text, but do not receive special formatting. For example, heading tags do not create heading intents, `pre` does not enable whitespace preservation, and `ol` attributes such as `start` do not change numbering. Script and style text are not explicitly filtered by the builder. Treat this as a converter for known HTML, not a sanitizer.
+///
+/// Every generated text run carries an ``HTMLElementAttribute`` describing its innermost element and ancestors. Inline attributes inherit through nesting. Elements without text generally have no corresponding run, except the media and line-break tags described above.
+///
+/// ### Whitespace and block boundaries
+///
+/// By default, the builder collapses ordinary inline whitespace and trims it within its normalization ranges. Newlines inserted for `br` are preserved using ``HTMLRawTextAttribute``. Set `preserveWhitespace: true` to retain whitespace delivered by the parser; this does not bypass libxml2's parsing and recovery behavior.
+///
+/// ```swift
+/// let text = AttributedString(
+///     html: "<p>enum Example {<br />  case value<br />}</p>",
+///     preserveWhitespace: true
+/// )
+/// ```
+///
+/// Paragraph and list boundaries are represented by presentation intents, not inserted newline characters. For `<p>Hello</p><p>world</p>`, `String(text.characters)` is `Helloworld`. A block-aware renderer such as ``BlockTextView`` lays the paragraphs out separately. Plain-text export needs to insert separators explicitly.
+///
+/// ### Seed an existing string
+///
+/// The inout overload appends generated content to a supplied string. Existing content and attributes remain in the result, though the final whitespace normalization also visits that content unless whitespace preservation is enabled.
+///
+/// ```swift
+/// var text = AttributedString("Prefix: ")
+/// let builder = HTMLAttributedStringBuilder(html: "<strong>hello</strong>", preserveWhitespace: true)
+/// builder.generatedAttributedString(string: &text)
+/// ```
+///
+/// ### Diagnostics and customization
+///
+/// Parsing is synchronous and best effort. The builder returns recovered content even when libxml2 reports errors; ``parseErrors`` contains diagnostics from the generation call. A diagnostic does not necessarily mean the result is unusable. Create a fresh builder for each document and do not share one instance between concurrent operations.
+///
+/// Post-process the result to implement known CSS classes, plain-text conversion, or custom media rendering. See <doc:CustomizingHTML>. The builder is public but not open for subclassing outside the module; for different behavior during parsing, implement ``HTMLParserDelegate`` with ``HTMLParser`` as shown in <doc:CustomParsing>.
 public class HTMLAttributedStringBuilder {
 	private let data: Data
 	private let parser: HTMLParser
 	let preserveWhitespace: Bool
 
+	/// Creates a builder for a UTF-8 encoded Swift string.
+	/// - Parameters:
+	///   - html: The HTML source.
+	///   - preserveWhitespace: Whether to skip final whitespace normalization.
 	public convenience init(html: String, preserveWhitespace: Bool = false) {
 		let data = Data(html.utf8)
 		self.init(
@@ -50,6 +133,11 @@ public class HTMLAttributedStringBuilder {
 		)
 	}
 
+	/// Creates a builder for HTML data with an explicit character encoding.
+	/// - Parameters:
+	///   - html: The HTML bytes.
+	///   - encoding: The encoding of the input data.
+	///   - preserveWhitespace: Whether to skip final whitespace normalization.
 	public init(
 		html: Data,
 		encoding: String.Encoding = .utf8,
@@ -65,8 +153,15 @@ public class HTMLAttributedStringBuilder {
 	}
 
 	private var string = AttributedString()
+	/// Diagnostics collected during the most recent generation call.
+	///
+	/// Recovery may still produce useful text when this array is nonempty.
 	public var parseErrors: [any Error] = []
 
+	/// Parses the HTML and appends its content to the supplied attributed string.
+	///
+	/// Final whitespace normalization also visits the supplied content unless disabled.
+	/// - Parameter string: Existing content to include before the generated HTML text.
 	public func generatedAttributedString(string: inout AttributedString) {
 		self.string = string
 		parseErrors = []
@@ -76,6 +171,8 @@ public class HTMLAttributedStringBuilder {
 		string = self.string
 	}
 
+	/// Parses the HTML synchronously and returns its attributed text.
+	/// - Returns: Best-effort output, including recovered content if parsing reports errors.
 	public func generatedAttributedString() -> AttributedString {
 		self.string = AttributedString()
 		parseErrors = []
