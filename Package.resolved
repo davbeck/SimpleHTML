@@ -1,5 +1,5 @@
 {
-  "originHash" : "fec5363bb5bb057ff3ccbc61bb86cd232d70a71ea5677605e897d8314051176a",
+  "originHash" : "2400de3aa35137361436162ee10239598702356399e0738de9a00835f69fbe1e",
   "pins" : [
     {
       "identity" : "swift-custom-dump",
@@ -17,6 +17,24 @@
       "state" : {
         "revision" : "b23bb4493c439d3e05152bc167014235ba3d47fc",
         "version" : "2.1.2"
+      }
+    },
+    {
+      "identity" : "swift-snapshot-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
+      "state" : {
+        "revision" : "28e5de025e3fd98991791bfbf83023ab3708da03",
+        "version" : "1.19.6"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "050f1a346fbbac0ca2cfb15a95274f7bd1cf0ccf",
+        "version" : "604.0.0"
       }
     }
   ],
